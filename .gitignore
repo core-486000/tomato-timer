@@ -3,3 +3,4 @@ design-document.text
 .env
 !/test/*
 !/prisma/*
+!/views/*
