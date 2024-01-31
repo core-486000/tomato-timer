@@ -18,7 +18,7 @@ passport.deserializeUser((obj, done) => done(null, obj));
 passport.use(new GitHubStrategy({
     clientID: GITHUB_CLIENT_ID,
     clientSecret: GITHUB_CLIENT_SECRET,
-    callbackURL: 'http://localhost:8000/auth/github/callback'
+    callbackURL: process.env.CALLBACK_URL
   },
   (accessToken, refreshToken, profile, done) => {
     process.nextTick(() => {
