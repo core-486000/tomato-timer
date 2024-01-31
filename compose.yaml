@@ -14,3 +14,12 @@ services:
     build: 
       context: "."
       dockerfile: "db.Dockerfile"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tomato-timer
+    volumes:
+      - tomato-timer-data:/var/lib/postgresql/data
+volumes:
+  tomato-timer-data:
+    external: true
