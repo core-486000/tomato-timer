@@ -13,19 +13,20 @@ datasource db {
 model User {
   userId   Int    @id
   username String @unique @db.VarChar(255)
-  timer    Timer?
+  timer    Timer[]
 
   @@map(name: "users")
 }
 
 model Timer {
-  userId         Int        @id
+  userId         Int
+  timerRecordId  Int        @default(autoincrement())
   workTime       DateTime[] @db.Time
   breakTime      DateTime[] @db.Time
   Date           DateTime   @db.Date
   TodaysWorkTime DateTime   @db.Time
   user           User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
-  @@index(fields: [userId])
+  @@id(fields: [userId, timerRecordId], name: "timerCompositeId")
   @@map(name: "Timers")
 }
