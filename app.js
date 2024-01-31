@@ -3,11 +3,37 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const helmet = require('helmet');
+const session = require('express-session');
+const passport = require('passport');
+require('dotenv').config();
+
+const GitHubStrategy = require('passport-github2').Strategy;
+const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
+const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
+
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((obj, done) => done(null, obj));
+
+passport.use(new GitHubStrategy({
+    clientID: GITHUB_CLIENT_ID,
+    clientSecret: GITHUB_CLIENT_SECRET,
+    callbackURL: 'http://localhost:8000/auth/github/callback'
+  },
+  (accessToken, refreshToken, profile, done) => {
+    process.nextTick(() => {
+      return done(null, profile);
+    });
+  }
+));
 
 const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
+const loginRouter = require('./routes/login');
+const logoutRouter = require('./routes/logout');
+const timerRouter = require('./routes/timer');
 
 const app = express();
+app.use(helmet());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -19,8 +45,26 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(session({ secret: 'b03d80667d932699', resave: false, saveUninitialized: false }));
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/login', loginRouter);
+app.use('/logout', logoutRouter);
+
+app.get(
+  '/auth/github',
+  passport.authenticate('github', { scope: ['user:email'] })  
+);
+
+app.get(
+  '/auth/github/callback',
+  passport.authenticate('github', { failureRedirect: '/login' }),
+  (req, res) => {
+    res.redirect('/timer');
+  }
+);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
