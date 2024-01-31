@@ -1,3 +1,4 @@
 node_modules/
 design-document.text
 .env
+!/test/test.js
