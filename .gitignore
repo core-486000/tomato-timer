@@ -1,0 +1,5 @@
+node_modules/
+design-document.text
+.env
+!/test/*
+!/prisma/*
