@@ -1,0 +1,31 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userId   Int    @id
+  username String @unique @db.VarChar(255)
+  timer    Timer?
+
+  @@map(name: "users")
+}
+
+model Timer {
+  userId         Int        @id
+  workTime       DateTime[] @db.Time
+  breakTime      DateTime[] @db.Time
+  Date           DateTime   @db.Date
+  TodaysWorkTime DateTime   @db.Time
+  user           User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@index(fields: [userId])
+  @@map(name: "Timers")
+}
