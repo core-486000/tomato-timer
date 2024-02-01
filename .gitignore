@@ -1,6 +1,5 @@
+!/*
 node_modules/
 design-document.text
 .env
-!/test/*
-!/prisma/*
-!/views/*
+public/javascripts/bundle.js
