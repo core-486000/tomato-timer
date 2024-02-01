@@ -1,7 +1,8 @@
 extends layout
 
 block content
-  if user
-    a(href="/logout") ログアウト 
-  else 
-    a(href="/login") ログイン
+  div
+    if user
+      a(href="/logout") #{user.username} をログアウト 
+    else 
+      a(href="/login") ログイン

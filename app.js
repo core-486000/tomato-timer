@@ -6,6 +6,8 @@ const logger = require('morgan');
 const helmet = require('helmet');
 const session = require('express-session');
 const passport = require('passport');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient({ log: [ 'query' ] });
 require('dotenv').config();
 
 const GitHubStrategy = require('passport-github2').Strategy;
@@ -21,7 +23,20 @@ passport.use(new GitHubStrategy({
     callbackURL: process.env.CALLBACK_URL || 'http://localhost:8000/auth/github/callback'
   },
   (accessToken, refreshToken, profile, done) => {
-    process.nextTick(() => {
+    process.nextTick(async () => {
+      const userId = parseInt(profile.id);
+
+      const data = {
+        userId,
+        username: profile.username
+      }
+
+      await prisma.user.upsert({
+        where: { userId },
+        create: data,
+        update: data
+      });
+
       return done(null, profile);
     });
   }
