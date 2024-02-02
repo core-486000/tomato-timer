@@ -13,21 +13,18 @@ datasource db {
 model User {
   userId   Int     @id
   username String  @unique @db.VarChar(255)
-  timer    Timer[]
+  timerRecord    TimerRecord[]
 
   @@map(name: "users")
 }
 
-// ユーザごとに生成され、タイマー時間の変更、1日の作業時間を記録する。
-model Timer {
+// ユーザごとに作成され、1日の作業時間を記録する。
+model TimerRecord {
   userId         Int
-  timerRecordId  Int        @default(autoincrement())
-  workTime       DateTime[] @db.Time
-  breakTime      DateTime[] @db.Time
   Date           DateTime   @db.Date
-  TodaysWorkTime DateTime   @db.Time
+  WorkTimeRecord DateTime   @db.Time
   user           User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
-  @@id(fields: [userId, timerRecordId], name: "timerCompositeId")
-  @@map(name: "timers")
+  @@id(fields: [userId, Date], name: "timerCompositeId")
+  @@map(name: "timer_records")
 }
