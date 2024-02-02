@@ -29,5 +29,5 @@ model Timer {
   user           User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@id(fields: [userId, timerRecordId], name: "timerCompositeId")
-  @@map(name: "Timers")
+  @@map(name: "timers")
 }
