@@ -6,6 +6,7 @@ block content
       a(href="/logout") #{user.username} をログアウト 
     else 
       a(href="/login") ログイン
-  div#timer-divided
+  div
     p#timer 25:00
+    button#cancel-button(type="button") キャンセル
     button#start-button(type="button") 開始
