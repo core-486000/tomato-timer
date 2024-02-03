@@ -10,20 +10,22 @@ dayjs.extend(timezone);
 dayjs.extend(isBefore);
 dayjs.tz.setDefault('Asia/Tokyo');
 
-let timerId;
 const timer = $('#timer');
+let timerId;
+let remainingTime;
 
 // タイマーのカウントダウン
-function startTimer(finishTime) {
+function setTimer(finishTime) {
   const now = new Date();
 
   // タイマーが終了したかどうか
   if (dayjs(now).isBefore(dayjs(finishTime))) {
-    const remainingTime = finishTime.diff(now);
+    console.log('タイマー動作中だよ');
+
+    remainingTime = finishTime.diff(now);
     const formattedTime = dayjs(remainingTime).tz().format('mm:ss');
     timer.text(formattedTime);
     $('title').html(formattedTime);
-    console.log('タイマー動作中だよ');
   } else {
     console.log('タイマー終了したよ');
   }
@@ -36,10 +38,9 @@ $('body').on('click', '#start-button', () => {
     '<button id="stop-button" type="button">一時停止</button>'
   );
 
-  // 終了時間を計算してstartTimer()に渡す
   const minutes = 25;
   const finishTime = dayjs(new Date()).add(minutes, 'm');
-  timerId = setInterval(function(){startTimer(finishTime)}, 500);
+  timerId = setInterval(function(){setTimer(finishTime)}, 500);
 });
 
 // タイマーの一時停止ボタンをクリックした時
@@ -52,4 +53,13 @@ $('body').on('click', '#stop-button', () => {
   clearInterval(timerId);
 });
 
-// TODO タイマーの再開ボタンをクリックした時
+// タイマーの再開ボタンをクリックした時
+$('body').on('click', '#restart-button', () => {
+  const restartButton = $('#restart-button');
+  restartButton.replaceWith(
+    '<button id="stop-button" type="button">一時停止</button>'
+  );
+
+  const finishTime = dayjs(new Date()).add(remainingTime, 'ms');
+  timerId = setInterval(function(){setTimer(finishTime)}, 500);
+});
