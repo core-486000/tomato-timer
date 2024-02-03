@@ -28,7 +28,7 @@ function setTimer(finishTime) {
     remainingTime = finishTime.diff(now);
     formattedTime = dayjs(remainingTime).tz().format('mm:ss');
     timer.text(formattedTime);
-    $('title').html(formattedTime);
+    $('title').html(`${formattedTime} トマトタイマー`);
   } else {
   }
 }
@@ -79,5 +79,6 @@ cancelButton.click(() => {
   remainingTime = workTime * 60 * 1000;
   formattedTime = dayjs(remainingTime).tz().format('mm:ss');
   timer.text(formattedTime);
+  $('title').html('トマトタイマー');
   clearInterval(timerId);
 });
