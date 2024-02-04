@@ -9,6 +9,7 @@ let timerId;
 let remainingTime;
 let formattedTime;
 const timerSound = new Audio('../sounds/timer-sound.mp3');
+let playPromise;
 const workTime = 1; // タイマーの作業時間(分)
 
 timerInit();
@@ -30,8 +31,13 @@ function timerInit() {
     );
   }
 
-  timerSound.pause();
-  timerSound.currentTime = 0;
+  if (playPromise !== undefined) {
+    playPromise.then(_ => {
+      timerSound.pause();
+      timerSound.load();
+    });
+  }
+
   remainingTime = workTime * 60 * 1000;
   formattedTime = dayjs(remainingTime).format('mm:ss');
   timer.text(formattedTime);
@@ -61,7 +67,7 @@ function timerEnd() {
 
   timerSound.volume = 0.3;
   timerSound.loop = true;
-  timerSound.play();
+  playPromise = timerSound.play();
   clearInterval(timerId);
 }
 
