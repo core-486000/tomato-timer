@@ -2,4 +2,3 @@
 node_modules/
 design-document.text
 .env
-public/javascripts/bundle.js
