@@ -1,12 +1,13 @@
 extends layout
 
 block content
+  h2 トマトタイマー
   div
     if user
       a(href="/logout") #{user.username} をログアウト 
     else 
       a(href="/login") ログイン
   div
-    p#timer 25:00
+    p#timer 00:00
     button#cancel-button(type="button") キャンセル
     button#start-button(type="button") 開始
