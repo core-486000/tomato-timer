@@ -77,6 +77,7 @@ $('body').on('click', '#start-button', () => {
     '<button id="stop-button" type="button">一時停止</button>'
   );
 
+  timerSound.load();
   const finishTime = dayjs().add(workTime, 'm');
   timerId = setInterval(function(){setTimer(finishTime)}, 200);
 });
