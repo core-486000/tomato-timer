@@ -21,16 +21,16 @@ function timerInit() {
 // タイマーのカウントダウン
 function setTimer(finishTime) {
   const now = new Date();
+  remainingTime = finishTime.diff(now);
+  formattedTime = dayjs(remainingTime + 999).format('mm:ss'); // ミリ秒以下を切り上げてフォーマット
 
-  if (dayjs(now).isBefore(dayjs(finishTime))) {
-    // 残り時間を算出して表示する
-    remainingTime = finishTime.diff(now);
-    formattedTime = dayjs(remainingTime).format('mm:ss');
-    timer.text(formattedTime);
-    $('title').html(`${formattedTime} トマトタイマー`);
-  } else {
+  if (remainingTime <= 0) {
+    formattedTime = '00:00';
     timerEnd();
   }
+
+  timer.text(formattedTime);
+  $('title').html(`${formattedTime} トマトタイマー`);
 }
 
 function timerEnd() {
@@ -52,7 +52,7 @@ $('body').on('click', '#start-button', () => {
 
   timerSound.load();
   const finishTime = dayjs().add(remainingTime, 'ms');
-  timerId = setInterval(function(){setTimer(finishTime)}, 200);
+  timerId = setInterval(function(){setTimer(finishTime)}, 50);
 });
 
 $('body').on('click', '#stop-button', () => {
