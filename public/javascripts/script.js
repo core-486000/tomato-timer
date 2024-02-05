@@ -3,6 +3,7 @@ const timer = $('#timer');
 let startButton = $('#start-button');
 let stopButton = $('#stop-button');
 let okButton = $('#ok-button');
+const skipButton = $('#skip-button');
 let timerId;
 let remainingTime;
 let formattedTime;
@@ -25,6 +26,15 @@ let iterator = totalTimeMap.entries();
 
 timerInit();
 function timerInit() {
+  clearInterval(timerId);
+  changeToStartButton();
+  if (playPromise !== undefined) {
+    playPromise.then(_ => {
+      timerSound.pause();
+      timerSound.load();
+    });
+  }
+
   // longBreakTimeが終了したら最初に戻る
   let nextIterator = iterator.next().value;
   if (nextIterator === undefined) {
@@ -54,14 +64,13 @@ function setTimer(finishTime) {
 }
 
 function timerEnd() {
+  clearInterval(timerId);
   stopButton = $('#stop-button');
   stopButton.replaceWith(
     '<button id="ok-button" type="button">OK</button>'
   );
-
   timerSound.loop = true;
   playPromise = timerSound.play();
-  clearInterval(timerId);
 }
 
 $('body').on('click', '#start-button', () => {
@@ -69,33 +78,31 @@ $('body').on('click', '#start-button', () => {
   startButton.replaceWith(
     '<button id="stop-button" type="button">STOP</button>'
   );
-
   timerSound.load();
   const finishTime = dayjs().add(remainingTime, 'ms');
   timerId = setInterval(function(){setTimer(finishTime)}, 50);
 });
 
 $('body').on('click', '#stop-button', () => {
+  clearInterval(timerId);
+  changeToStartButton();
+});
+
+$('body').on('click', '#ok-button', () => {
+  timerInit();
+});
+
+skipButton.click(() => {
+  timerInit();
+});
+
+function changeToStartButton() {
   stopButton = $('#stop-button');
   stopButton.replaceWith(
     '<button id="start-button" type="button">START</button>'
   );
-
-  clearInterval(timerId);
-});
-
-$('body').on('click', '#ok-button', () => {
   okButton = $('#ok-button');
   okButton.replaceWith(
     '<button id="start-button" type="button">START</button>'
   );
-
-  if (playPromise !== undefined) {
-    playPromise.then(_ => {
-      timerSound.pause();
-      timerSound.load();
-    });
-  }
-
-  timerInit();
-});
+}
