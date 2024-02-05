@@ -32,7 +32,7 @@ function timerInit() {
     nextIterator = iterator.next().value;
   }
 
-  remainingTime = nextIterator[1] * 60 * 1000; // これから開始する作業時間もしくは休憩時間を取得
+  remainingTime = nextIterator[1] * 1000 * 60; // これから開始する作業時間もしくは休憩時間を取得
   formattedTime = dayjs(remainingTime + 999).format('mm:ss'); // ミリ秒以下を切り上げてフォーマット
   timer.text(formattedTime);
   $('title').html('トマトタイマー');
