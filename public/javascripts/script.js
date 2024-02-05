@@ -5,14 +5,13 @@ let startButton = $('#start-button');
 let stopButton = $('#stop-button');
 let okButton = $('#ok-button');
 const skipButton = $('#skip-button');
-
-let timerId;
-let remainingTime;
-let formattedTime;
+const timerStatus = $('#timer-status');
 
 const timerSound = new Audio('../sounds/timer-sound.mp3');
 let playPromise;
-
+let timerId;
+let remainingTime;
+let formattedTime;
 const workTime = 25; // タイマーの作業時間(分)
 const breakTime = 5; // タイマーの休憩時間(分)
 const longBreakTime = 15; // タイマーの最後の休憩時間(分)
@@ -27,10 +26,14 @@ for (let i = 1; i <= loop; i++) {
   }
 }
 let iterator = totalTimeMap.entries();
+let workBreakCount = 0;
 
 timerInit();
 function timerInit() {
   clearInterval(timerId);
+  workBreakCount++;
+  timerStatus.text(workBreakCount % 2 === 0 ? '次:休憩時間' : '次:作業時間');
+  timerStatus.append(`, ${Math.ceil(workBreakCount / 2)}周目`);  
   changeToStartButton();
   if (playPromise !== undefined) {
     playPromise.then(_ => {
@@ -78,6 +81,7 @@ function timerEnd() {
 }
 
 resetButton.click(() => {
+  workBreakCount = 0;
   iterator = totalTimeMap.entries();
   timerInit();
 });
@@ -88,6 +92,9 @@ $('body').on('click', '#start-button', () => {
     '<button id="stop-button" type="button">STOP</button>'
   );
   timerSound.load();
+  timerStatus.text(workBreakCount % 2 === 0 ? '現在:休憩時間' : '現在:作業時間');
+  timerStatus.append(`, ${Math.ceil(workBreakCount / 2)}周目`);
+
   const finishTime = dayjs().add(remainingTime, 'ms');
   timerId = setInterval(function(){setTimer(finishTime)}, 50);
 });
