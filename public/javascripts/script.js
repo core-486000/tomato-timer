@@ -8,12 +8,32 @@ let remainingTime;
 let formattedTime;
 const timerSound = new Audio('../sounds/timer-sound.mp3');
 let playPromise;
-const workTime = 1; // タイマーの作業時間(分)
+const workTime = 25; // タイマーの作業時間(分)
+const breakTime = 5; // タイマーの休憩時間(分)
+const longBreakTime = 15; // タイマーの最後の休憩時間(分)
+const loop = 4; // workTimeとbreakTimeを何回繰り返すか
+const totalTimeMap = new Map; // タイマーの作業時間と休憩時間を表したmap
+for (let i = 1; i <= loop; i++) {
+  totalTimeMap.set(`worktime${i}`, workTime);
+  if (i !== loop) {
+    totalTimeMap.set(`breakTime${i}`, breakTime);
+  } else {
+    totalTimeMap.set('longBreakTime', longBreakTime);
+  }
+}
+let iterator = totalTimeMap.entries();
 
 timerInit();
 function timerInit() {
-  remainingTime = workTime * 60 * 1000;
-  formattedTime = dayjs(remainingTime).format('mm:ss');
+  // longBreakTimeが終了したら最初に戻る
+  let nextIterator = iterator.next().value;
+  if (nextIterator === undefined) {
+    iterator = totalTimeMap.entries();
+    nextIterator = iterator.next().value;
+  }
+
+  remainingTime = nextIterator[1] * 60 * 1000; // これから開始する作業時間もしくは休憩時間を取得
+  formattedTime = dayjs(remainingTime + 999).format('mm:ss'); // ミリ秒以下を切り上げてフォーマット
   timer.text(formattedTime);
   $('title').html('トマトタイマー');
 }
