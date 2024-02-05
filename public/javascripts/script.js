@@ -1,14 +1,18 @@
 'use strict';
 const timer = $('#timer');
+const resetButton = $('#reset-button');
 let startButton = $('#start-button');
 let stopButton = $('#stop-button');
 let okButton = $('#ok-button');
 const skipButton = $('#skip-button');
+
 let timerId;
 let remainingTime;
 let formattedTime;
+
 const timerSound = new Audio('../sounds/timer-sound.mp3');
 let playPromise;
+
 const workTime = 25; // タイマーの作業時間(分)
 const breakTime = 5; // タイマーの休憩時間(分)
 const longBreakTime = 15; // タイマーの最後の休憩時間(分)
@@ -72,6 +76,11 @@ function timerEnd() {
   timerSound.loop = true;
   playPromise = timerSound.play();
 }
+
+resetButton.click(() => {
+  iterator = totalTimeMap.entries();
+  timerInit();
+});
 
 $('body').on('click', '#start-button', () => {
   startButton = $('#start-button');
