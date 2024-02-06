@@ -13,3 +13,18 @@ block content
     button#start-button(type="button") START
     button#skip-button(type="button") SKIP
     p#timer-status
+  form(action="/timer/update", method="POST") 
+    h3 時間変更フォーム
+    div
+      h5 作業時間(分)
+      input(type="number" name="workTime" min="1" max="59" value=cookies.workTime || 25 required)
+    div
+      h5 休憩時間(分)
+      input(type="number" name="breakTime" min="1" max="59" value=cookies.breakTime || 5 required)
+    div
+      h5 作業と休憩のループ回数
+      input(type="number" name="loop" min="1" max="10" value=cookies.loop || 4 required)
+    div
+      h5 最後の休憩時間(分)
+      input(type="number" name="lastBreakTime" min="1" max="59" value=cookies.lastBreakTime || 15 required)
+    button#change-time-button(type="submit") 送信
