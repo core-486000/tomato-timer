@@ -51,6 +51,7 @@ function timerInit() {
   }
 
   remainingTime = nextIterator[1] * 1000 * 60; // これから開始する作業時間もしくは休憩時間を取得
+  // TODO 99分まで正しく表示できるようにする
   formattedTime = dayjs(remainingTime + 999).format('mm:ss'); // ミリ秒以下を切り上げてフォーマット
   timer.text(formattedTime);
   $('title').html('トマトタイマー');

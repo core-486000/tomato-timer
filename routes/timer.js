@@ -10,17 +10,30 @@ dayjs.extend(timezone);
 dayjs.tz.setDefault('Asia/Tokyo');
 
 const cookieExpires = dayjs().add(1, 'y').tz().toDate();
+const { body, validationResult } = require('express-validator');
 
 router.get('/', (req, res, next) => {
   res.render('timer', { user: req.user, cookies: req.cookies});
 });
 
-router.post('/update', (req, res, next) => {
+router.post('/update', async (req, res, next) => {
+  await body('workTime').isInt().run(req);
+  await body('breakTime').isInt().run(req);
+  await body('loop').isInt().run(req);
+  await body('lastBreakTime').isInt().run(req);
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const err = new Error('入力された情報が不十分または正しくありません。');
+    err.status = 400;
+    return next(err);
+  }
+
   res
-    .cookie('workTime', req.body.workTime, { expires: cookieExpires })
-    .cookie('breakTime', req.body.breakTime, { expires: cookieExpires })
-    .cookie('loop', req.body.loop, { expires: cookieExpires })
-    .cookie('lastBreakTime', req.body.lastBreakTime, { expires: cookieExpires })
+    .cookie('workTime', req.body.workTime, { expires: cookieExpires, secure: true })
+    .cookie('breakTime', req.body.breakTime, { expires: cookieExpires, secure: true })
+    .cookie('loop', req.body.loop, { expires: cookieExpires, secure: true })
+    .cookie('lastBreakTime', req.body.lastBreakTime, { expires: cookieExpires, secure: true })
     .redirect('/');
 });
 
