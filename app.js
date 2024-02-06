@@ -49,13 +49,7 @@ const logoutRouter = require('./routes/logout');
 const timerRouter = require('./routes/timer');
 
 const app = express();
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      "script-src": ["'self'", "https://cdn.jsdelivr.net"]
-    }
-  }
-}));
+app.use(helmet());
 app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));
 
 // view engine setup

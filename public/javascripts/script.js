@@ -7,23 +7,22 @@ let okButton = $('#ok-button');
 const skipButton = $('#skip-button');
 const timerStatus = $('#timer-status');
 
+const timerSound = new Audio('../sounds/timer-sound.mp3');
+let playPromise;
 let timerId;
 let remainingTime;
 let formattedTime;
-const timerSound = new Audio('../sounds/timer-sound.mp3');
-let playPromise;
-
-const workTime = Cookies.get('workTime') || 25; // タイマーの作業時間(分)
-const breakTime = Cookies.get('breakTime') || 5; // タイマーの休憩時間(分)
-const loop = Cookies.get('loop') || 4; // workTimeとbreakTimeを何回繰り返すか
-const lastBreakTime = Cookies.get('lastBreakTime') || 15; // タイマーの最後の休憩時間(分)
+const workTime = 25; // タイマーの作業時間(分)
+const breakTime = 5; // タイマーの休憩時間(分)
+const longBreakTime = 15; // タイマーの最後の休憩時間(分)
+const loop = 4; // workTimeとbreakTimeを何回繰り返すか
 const totalTimeMap = new Map; // タイマーの作業時間と休憩時間を表したmap
 for (let i = 1; i <= loop; i++) {
   totalTimeMap.set(`worktime${i}`, workTime);
-  if (i < loop) {
+  if (i !== loop) {
     totalTimeMap.set(`breakTime${i}`, breakTime);
   } else {
-    totalTimeMap.set('lastBreakTime', lastBreakTime);
+    totalTimeMap.set('longBreakTime', longBreakTime);
   }
 }
 let iterator = totalTimeMap.entries();
@@ -43,7 +42,7 @@ function timerInit() {
     });
   }
 
-  // lastBreakTimeが終了したら最初に戻る
+  // longBreakTimeが終了したら最初に戻る
   let nextIterator = iterator.next().value;
   if (nextIterator === undefined) {
     iterator = totalTimeMap.entries();
@@ -105,9 +104,13 @@ $('body').on('click', '#stop-button', () => {
   changeToStartButton();
 });
 
-$('body').on('click', '#ok-button', timerInit);
+$('body').on('click', '#ok-button', () => {
+  timerInit();
+});
 
-skipButton.click(timerInit);
+skipButton.click(() => {
+  timerInit();
+});
 
 function changeToStartButton() {
   stopButton = $('#stop-button');
