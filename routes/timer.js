@@ -13,7 +13,11 @@ const cookieExpires = dayjs().add(1, 'y').tz().toDate();
 const { body, validationResult } = require('express-validator');
 
 router.get('/', (req, res, next) => {
-  res.render('timer', { user: req.user, cookies: req.cookies});
+  res.render('timer', { 
+    user: req.user,
+    cookies: req.cookies,
+    csrfToken: req.csrfToken()
+  });
 });
 
 router.post('/update', async (req, res, next) => {

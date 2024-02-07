@@ -6,6 +6,7 @@ const logger = require('morgan');
 const helmet = require('helmet');
 const session = require('express-session');
 const passport = require('passport');
+const csurf = require('tiny-csrf');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient({ log: [ 'query' ] });
 const favicon = require('serve-favicon');
@@ -68,12 +69,19 @@ app.set('view engine', 'pug');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser('core486000_signed_cookies'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({ secret: 'b03d80667d932699', resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use(
+  csurf(
+    'core486000secretsecret9876543212',
+    ['POST']
+  )
+);
 
 app.use('/', indexRouter);
 app.use('/login', loginRouter);
