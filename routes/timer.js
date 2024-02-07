@@ -2,14 +2,6 @@
 const express = require('express');
 const router = express.Router();
 
-const dayjs = require('dayjs');
-const utc = require('dayjs/plugin/utc');
-const timezone = require('dayjs/plugin/timezone');
-dayjs.extend(utc);
-dayjs.extend(timezone);
-dayjs.tz.setDefault('Asia/Tokyo');
-
-const cookieExpires = dayjs().add(1, 'y').tz().toDate();
 const { body, validationResult } = require('express-validator');
 
 router.get('/', (req, res, next) => {
@@ -34,10 +26,10 @@ router.post('/update', async (req, res, next) => {
   }
 
   res
-    .cookie('workTime', req.body.workTime, { expires: cookieExpires, secure: true })
-    .cookie('breakTime', req.body.breakTime, { expires: cookieExpires, secure: true })
-    .cookie('loop', req.body.loop, { expires: cookieExpires, secure: true })
-    .cookie('lastBreakTime', req.body.lastBreakTime, { expires: cookieExpires, secure: true })
+    .cookie('workTime', req.body.workTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+    .cookie('breakTime', req.body.breakTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+    .cookie('loop', req.body.loop, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+    .cookie('lastBreakTime', req.body.lastBreakTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
     .redirect('/');
 });
 
