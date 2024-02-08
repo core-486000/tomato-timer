@@ -5,7 +5,12 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 
 router.get('/', (req, res, next) => {
-  res.render('timer', { 
+  res
+  .cookie('workTime', req.cookies.workTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+  .cookie('breakTime', req.cookies.breakTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+  .cookie('loop', req.cookies.loop, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+  .cookie('lastBreakTime', req.cookies.lastBreakTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+  .render('timer', { 
     user: req.user,
     cookies: req.cookies,
     csrfToken: req.csrfToken()
@@ -13,6 +18,7 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/update', async (req, res, next) => {
+  // Cookieに保存するデータのバリデーション
   await body('workTime').isInt({ min: 1, max: 59 }).run(req);
   await body('breakTime').isInt({ min: 1, max: 59 }).run(req);
   await body('loop').isInt({ min: 1, max: 10 }).run(req);
