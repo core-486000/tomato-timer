@@ -18,17 +18,16 @@ block content
     input(type="hidden" name="_csrf" value!=csrfToken)
     div
       h5 作業時間(分)
-      input(type="number" name="workTime" min="1" max="59" value=cookies.workTime || 25 required)
+      input(type="number" name="workTime" min="1" max="99" value=cookies.workTime || 25 required)
     div
       h5 休憩時間(分)
-      input(type="number" name="breakTime" min="1" max="59" value=cookies.breakTime || 5 required)
+      input(type="number" name="breakTime" min="1" max="99" value=cookies.breakTime || 5 required)
     div
       h5 作業と休憩のループ回数
       input(type="number" name="loop" min="1" max="10" value=cookies.loop || 4 required)
     div
       h5 最後の休憩時間(分)
-      input(type="number" name="lastBreakTime" min="1" max="59" value=cookies.lastBreakTime || 15 required)
+      input(type="number" name="lastBreakTime" min="1" max="99" value=cookies.lastBreakTime || 15 required)
     button#change-time-button(type="submit") 送信
-  script(src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js")
   script(src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous")
   script(src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js")

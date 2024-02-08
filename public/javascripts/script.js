@@ -1,15 +1,10 @@
 'use strict';
 const timer = $('#timer');
-const resetButton = $('#reset-button');
-let startButton = $('#start-button');
-let stopButton = $('#stop-button');
-let okButton = $('#ok-button');
-const skipButton = $('#skip-button');
 const timerStatus = $('#timer-status');
 
 let timerId;
 let remainingTime;
-let formattedTime;
+let formatTime;
 const timerSound = new Audio('../sounds/timer-sound.mp3');
 let playPromise;
 
@@ -36,6 +31,7 @@ function timerInit() {
   timerStatus.text(workBreakCount % 2 === 0 ? '次:休憩時間' : '次:作業時間');
   timerStatus.append(`, ${Math.ceil(workBreakCount / 2)}周目`);  
   changeToStartButton();
+
   if (playPromise !== undefined) {
     playPromise.then(_ => {
       timerSound.pause();
@@ -51,53 +47,50 @@ function timerInit() {
   }
 
   remainingTime = nextIterator[1] * 1000 * 60; // これから開始する作業時間もしくは休憩時間を取得
-  // TODO 99分まで正しく表示できるようにする
-  formattedTime = dayjs(remainingTime + 999).format('mm:ss'); // ミリ秒以下を切り上げてフォーマット
-  timer.text(formattedTime);
+  formatTime = getFormatTime(remainingTime);
+  timer.text(formatTime);
   $('title').html('トマトタイマー');
 }
 
 // タイマーのカウントダウン
 function setTimer(finishTime) {
   const now = new Date();
-  remainingTime = finishTime.diff(now);
-  formattedTime = dayjs(remainingTime + 999).format('mm:ss'); // ミリ秒以下を切り上げてフォーマット
+  remainingTime = finishTime.getTime() - now.getTime();
+  formatTime = getFormatTime(remainingTime);
+  timer.text(formatTime);
+  $('title').html(`${formatTime} トマトタイマー`);
 
   if (remainingTime <= 0) {
-    formattedTime = '00:00';
     timerEnd();
   }
-
-  timer.text(formattedTime);
-  $('title').html(`${formattedTime} トマトタイマー`);
 }
 
 function timerEnd() {
   clearInterval(timerId);
-  stopButton = $('#stop-button');
-  stopButton.replaceWith(
+  $('#stop-button').replaceWith(
     '<button id="ok-button" type="button">OK</button>'
   );
   timerSound.loop = true;
   playPromise = timerSound.play();
 }
 
-resetButton.click(() => {
+$('#reset-button').click(() => {
   workBreakCount = 0;
   iterator = totalTimeMap.entries();
   timerInit();
 });
 
 $('body').on('click', '#start-button', () => {
-  startButton = $('#start-button');
-  startButton.replaceWith(
+  $('#start-button').replaceWith(
     '<button id="stop-button" type="button">STOP</button>'
   );
   timerSound.load();
   timerStatus.text(workBreakCount % 2 === 0 ? '現在:休憩時間' : '現在:作業時間');
   timerStatus.append(`, ${Math.ceil(workBreakCount / 2)}周目`);
 
-  const finishTime = dayjs().add(remainingTime, 'ms');
+  const now = new Date();
+  const finishTime = new Date();
+  finishTime.setMilliseconds(now.getMilliseconds() + remainingTime);
   timerId = setInterval(function(){setTimer(finishTime)}, 50);
 });
 
@@ -108,15 +101,31 @@ $('body').on('click', '#stop-button', () => {
 
 $('body').on('click', '#ok-button', timerInit);
 
-skipButton.click(timerInit);
+$('#skip-button').click(timerInit);
 
 function changeToStartButton() {
-  stopButton = $('#stop-button');
-  stopButton.replaceWith(
+  $('#stop-button').replaceWith(
     '<button id="start-button" type="button">START</button>'
   );
-  okButton = $('#ok-button');
-  okButton.replaceWith(
+  $('#ok-button').replaceWith(
     '<button id="start-button" type="button">START</button>'
   );
+}
+
+function getFormatTime(remainingTime) {
+  // ミリ秒以下を切り上げ
+  let ceilRemainingTime = Math.ceil(remainingTime / 10) * 10;
+  ceilRemainingTime = Math.ceil(ceilRemainingTime / 100) * 100;
+  ceilRemainingTime = Math.ceil(ceilRemainingTime / 1000) * 1000;
+
+  let minutes = new Date(ceilRemainingTime).getMinutes();
+  // 60分以上の時、正しく表示する
+  if (ceilRemainingTime >= 1000 * 60 * 60) {
+    minutes += 60;
+  }
+  minutes = ('0' + minutes).slice(-2);
+
+  let seconds = new Date(ceilRemainingTime).getSeconds();
+  seconds = ('0' + seconds).slice(-2);
+  return `${minutes}:${seconds}`;
 }

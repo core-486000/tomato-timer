@@ -54,7 +54,6 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       "script-src": ["'self'",
-      "https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js", 
       "https://code.jquery.com/jquery-3.7.1.min.js", 
       "https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"]
     }

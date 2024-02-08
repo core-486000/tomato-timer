@@ -22,10 +22,10 @@ router.get('/', (req, res, next) => {
 
 router.post('/update', async (req, res, next) => {
   // Cookieに保存するデータのバリデーション
-  await body('workTime').isInt({ min: 1, max: 59 }).run(req);
-  await body('breakTime').isInt({ min: 1, max: 59 }).run(req);
+  await body('workTime').isInt({ min: 1, max: 99 }).run(req);
+  await body('breakTime').isInt({ min: 1, max: 99 }).run(req);
   await body('loop').isInt({ min: 1, max: 10 }).run(req);
-  await body('lastBreakTime').isInt({ min: 1, max: 59 }).run(req);
+  await body('lastBreakTime').isInt({ min: 1, max: 99 }).run(req);
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
