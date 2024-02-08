@@ -5,12 +5,15 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 
 router.get('/', (req, res, next) => {
-  res
-  .cookie('workTime', req.cookies.workTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
-  .cookie('breakTime', req.cookies.breakTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
-  .cookie('loop', req.cookies.loop, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
-  .cookie('lastBreakTime', req.cookies.lastBreakTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
-  .render('timer', { 
+  if (req.cookies.workTime && req.cookies.breakTime && req.cookies.loop && req.cookies.lastBreakTime) {
+    res
+      .cookie('workTime', req.cookies.workTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+      .cookie('breakTime', req.cookies.breakTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+      .cookie('loop', req.cookies.loop, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+      .cookie('lastBreakTime', req.cookies.lastBreakTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true });
+  }
+  
+  res.render('timer', { 
     user: req.user,
     cookies: req.cookies,
     csrfToken: req.csrfToken()
