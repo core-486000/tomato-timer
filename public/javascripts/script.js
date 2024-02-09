@@ -3,16 +3,19 @@ const timer = $('#timer');
 const timerStatus = $('#timer-status');
 
 let timerId;
+let expireTimerSound;
 let remainingTime;
 let formatTime;
 const timerSound = new Audio('../sounds/timer-sound.mp3');
 let playPromise;
+let wakeLock = null;
 
-const workTime = Cookies.get('workTime') || 25; // タイマーの作業時間(分)
-const breakTime = Cookies.get('breakTime') || 5; // タイマーの休憩時間(分)
-const loop = Cookies.get('loop') || 4; // workTimeとbreakTimeを何回繰り返すか
-const lastBreakTime = Cookies.get('lastBreakTime') || 15; // タイマーの最後の休憩時間(分)
-const totalTimeMap = new Map; // タイマーの作業時間と休憩時間を表したmap
+const workTime = Cookies.get('workTime') || 25;
+const breakTime = Cookies.get('breakTime') || 5;
+const loop = Cookies.get('loop') || 4;
+const lastBreakTime = Cookies.get('lastBreakTime') || 15;
+const totalTimeMap = new Map;
+// workTime, breakTime, loop, lastBreakTimeをまとめる
 for (let i = 1; i <= loop; i++) {
   totalTimeMap.set(`worktime${i}`, workTime);
   if (i < loop) {
@@ -24,13 +27,26 @@ for (let i = 1; i <= loop; i++) {
 let iterator = totalTimeMap.entries();
 let workBreakCount = 0;
 
-timerInit();
-function timerInit() {
+(async () => {
+  // 画面の自動スリープを禁止
+  wakeLock = await navigator.wakeLock.request('screen');
+})()
+.then(init);
+
+async function init() {
   clearInterval(timerId);
+  clearTimeout(expireTimerSound);
   workBreakCount++;
   timerStatus.text(workBreakCount % 2 === 0 ? '次:休憩時間' : '次:作業時間');
   timerStatus.append(`, ${Math.ceil(workBreakCount / 2)}周目`);  
   changeToStartButton();
+
+  if (wakeLock !== null) {
+  // 画面の自動スリープを許可
+    wakeLock.release().then(() => {
+      wakeLock = null;
+    });
+  }
 
   if (playPromise !== undefined) {
     playPromise.then(_ => {
@@ -46,7 +62,7 @@ function timerInit() {
     nextIterator = iterator.next().value;
   }
 
-  remainingTime = nextIterator[1] * 1000 * 60; // これから開始する作業時間もしくは休憩時間を取得
+  remainingTime = nextIterator[1] * 1000 * 60;
   formatTime = getFormatTime(remainingTime);
   timer.text(formatTime);
   $('title').html('トマトタイマー');
@@ -72,15 +88,28 @@ function timerEnd() {
   );
   timerSound.loop = true;
   playPromise = timerSound.play();
+
+  expireTimerSound = setTimeout(() => {
+    if (playPromise !== undefined) {
+      playPromise.then(_ => {
+        timerSound.pause();
+        timerSound.load();
+      });
+    }
+
+    wakeLock.release().then(() => {
+      wakeLock = null;
+    });
+  }, 1000 * 60 * 10);
 }
 
 $('#reset-button').click(() => {
   workBreakCount = 0;
   iterator = totalTimeMap.entries();
-  timerInit();
+  init();
 });
 
-$('body').on('click', '#start-button', () => {
+$('body').on('click', '#start-button', async () => {
   $('#start-button').replaceWith(
     '<button id="stop-button" type="button">STOP</button>'
   );
@@ -92,16 +121,21 @@ $('body').on('click', '#start-button', () => {
   const finishTime = new Date();
   finishTime.setMilliseconds(now.getMilliseconds() + remainingTime);
   timerId = setInterval(function(){setTimer(finishTime)}, 50);
+
+  wakeLock = await navigator.wakeLock.request('screen');
 });
 
 $('body').on('click', '#stop-button', () => {
   clearInterval(timerId);
   changeToStartButton();
+  wakeLock.release().then(() => {
+    wakeLock = null;
+  });
 });
 
-$('body').on('click', '#ok-button', timerInit);
+$('body').on('click', '#ok-button', init);
 
-$('#skip-button').click(timerInit);
+$('#skip-button').click(init);
 
 function changeToStartButton() {
   $('#stop-button').replaceWith(
