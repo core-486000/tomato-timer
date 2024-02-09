@@ -14,7 +14,12 @@ router.get('/', (req, res, next) => {
   }
   
   res.render('timer', { 
-    user: req.user,
+    user: req.user
+  });
+});
+
+router.get('/edit', (req, res, next) => {
+  res.render('edit', { 
     cookies: req.cookies,
     csrfToken: req.csrfToken()
   });
