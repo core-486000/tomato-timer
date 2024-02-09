@@ -4,7 +4,7 @@ block content
   h2 トマトタイマー
   a(href="/timer") 戻る 
   h3 時間変更フォーム
-  form(action="/timer/update", method="POST") 
+  form(id="change-time-form" action="/timer/update" method="POST") 
     input(type="hidden" name="_csrf" value!=csrfToken)
     div
       h5 作業時間(分)
@@ -18,4 +18,7 @@ block content
     div
       h5 最後の休憩時間(分)
       input(type="number" name="lastBreakTime" min="1" max="99" value=cookies.lastBreakTime || 15 required)
-    button#change-time-button(type="submit") 送信
+    button#default-button(type="button") デフォルト
+    button(type="submit") 送信
+  script(src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous")
+  script(src="/javascripts/edit.js")
