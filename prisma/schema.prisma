@@ -11,20 +11,40 @@ datasource db {
 }
 
 model User {
-  userId   Int     @id
-  username String  @unique @db.VarChar(255)
-  timerRecord    TimerRecord[]
+  userId   Int    @id
+  username String @unique @db.VarChar(255)
+  timer    Timer?
 
   @@map(name: "users")
 }
 
-// ユーザごとに作成され、1日の作業時間を記録する。
-model TimerRecord {
-  userId         Int
-  Date           DateTime   @db.Date
-  WorkTimeRecord DateTime   @db.Time
-  user           User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
+model Timer {
+  userId Int      @id
+  user   User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  time   Time?
+  record Record[]
 
-  @@id(fields: [userId, Date], name: "timerCompositeId")
-  @@map(name: "timer_records")
+  @@map(name: "timers")
+}
+
+model Time {
+  userId        Int   @id
+  workTime      Int
+  breakTime     Int
+  loop          Int
+  lastBreakTime Int
+  timer         Timer @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map(name: "time")
+}
+
+// 毎日の作業時間を記録する
+model Record {
+  userId         Int
+  Date           DateTime @db.Date
+  WorkTimeRecord DateTime @db.Time
+  timer          Timer    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@id(fields: [userId, Date], name: "recordCompositeId")
+  @@map(name: "records")
 }
