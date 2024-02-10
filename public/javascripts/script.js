@@ -27,26 +27,22 @@ for (let i = 1; i <= loop; i++) {
 let iterator = sortedTime[Symbol.iterator]();
 let workAndBreakCount = 0;
 
-(async () => {
-  // 画面の自動スリープを禁止
-  wakeLock = await navigator.wakeLock.request('screen');
-})()
-.then(init);
+denySleepMode().then(init);
 
 async function init() {
   clearInterval(timerId);
   clearTimeout(timerSoundExpire);
+  allowSleepMode();
   workAndBreakCount++;
   timerStatus.text(workAndBreakCount % 2 === 0 ? '次:休憩時間' : '次:作業時間');
   timerStatus.append(`, ${Math.ceil(workAndBreakCount / 2)}周目`);  
-  changeToStartButton();
 
-  if (wakeLock !== null) {
-  // 画面の自動スリープを許可
-    wakeLock.release().then(() => {
-      wakeLock = null;
-    });
-  }
+  $('#stop-button').replaceWith(
+    '<button id="start-button" type="button">START</button>'
+  );
+  $('#ok-button').replaceWith(
+    '<button id="start-button" type="button">START</button>'
+  );
 
   if (playPromise !== undefined) {
     playPromise.then(_ => {
@@ -97,9 +93,7 @@ function timerEnd() {
       });
     }
 
-    wakeLock.release().then(() => {
-      wakeLock = null;
-    });
+    allowSleepMode();
   }, 1000 * 60 * 10);
 }
 
@@ -122,29 +116,21 @@ $('body').on('click', '#start-button', async () => {
   finishTime.setMilliseconds(now.getMilliseconds() + remainingTime);
   timerId = setInterval(function(){setTimer(finishTime)}, 50);
 
-  wakeLock = await navigator.wakeLock.request('screen');
+  denySleepMode();
 });
 
 $('body').on('click', '#stop-button', () => {
   clearInterval(timerId);
-  changeToStartButton();
-  wakeLock.release().then(() => {
-    wakeLock = null;
-  });
+  $('#stop-button').replaceWith(
+    '<button id="start-button" type="button">START</button>'
+  );
+  
+  allowSleepMode();
 });
 
 $('body').on('click', '#ok-button', init);
 
 $('#skip-button').click(init);
-
-function changeToStartButton() {
-  $('#stop-button').replaceWith(
-    '<button id="start-button" type="button">START</button>'
-  );
-  $('#ok-button').replaceWith(
-    '<button id="start-button" type="button">START</button>'
-  );
-}
 
 function getformattedTime(remainingTime) {
   // ミリ秒以下を切り上げ
@@ -162,4 +148,23 @@ function getformattedTime(remainingTime) {
   let seconds = new Date(ceilRemainingTime).getSeconds();
   seconds = ('0' + seconds).slice(-2);
   return `${minutes}:${seconds}`;
+}
+
+async function denySleepMode() {
+  // wakeLockに対応している場合のみ、自動スリープを禁止
+  if ('wakeLock' in navigator) {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+    } catch (err) {
+      console.error(err.name, err.message);
+    }
+  }
+}
+
+function allowSleepMode() {
+  if (wakeLock !== null) {
+      wakeLock.release().then(() => {
+        wakeLock = null;
+      });
+  }
 }
