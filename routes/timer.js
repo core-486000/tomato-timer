@@ -1,6 +1,8 @@
 'use strict';
 const express = require('express');
 const router = express.Router();
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient({ log: [ 'query' ] });
 
 const { body, validationResult } = require('express-validator');
 
@@ -26,7 +28,7 @@ router.get('/edit', (req, res, next) => {
 });
 
 router.post('/update', async (req, res, next) => {
-  // Cookieに保存するデータのバリデーション
+  // CookieとDBに保存するタイマー時間のバリデーション
   await body('workTime').isInt({ min: 1, max: 99 }).run(req);
   await body('breakTime').isInt({ min: 1, max: 99 }).run(req);
   await body('loop').isInt({ min: 1, max: 10 }).run(req);
@@ -39,11 +41,32 @@ router.post('/update', async (req, res, next) => {
     return next(err);
   }
 
+  const workTime = parseInt(req.body.workTime);
+  const breakTime = parseInt(req.body.breakTime);
+  const loop = parseInt(req.body.loop);
+  const lastBreakTime = parseInt(req.body.lastBreakTime);
+
+  if (req.isAuthenticated()) {
+    const userId = parseInt(req.user.id);
+    const data = {
+      userId,
+      workTime,
+      breakTime,
+      loop,
+      lastBreakTime
+    };
+    await prisma.time.upsert({
+      where: { userId },
+      update: data,
+      create: data
+    });
+  }
+
   res
-    .cookie('workTime', req.body.workTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
-    .cookie('breakTime', req.body.breakTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
-    .cookie('loop', req.body.loop, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
-    .cookie('lastBreakTime', req.body.lastBreakTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+    .cookie('workTime', workTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+    .cookie('breakTime', breakTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+    .cookie('loop', loop, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+    .cookie('lastBreakTime', lastBreakTime, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
     .redirect('/');
 });
 

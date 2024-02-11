@@ -39,6 +39,12 @@ passport.use(new GitHubStrategy({
         update: data
       });
 
+      await prisma.timer.upsert({
+        where: { userId },
+        create: { userId },
+        update: { userId }
+      });
+
       return done(null, profile);
     });
   }
