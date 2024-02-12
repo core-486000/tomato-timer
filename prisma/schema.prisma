@@ -18,13 +18,13 @@ model User {
   @@map(name: "users")
 }
 
-// ユーザごとに作成され、1日の作業時間を記録する。
+// 1日の作業時間を記録する
 model TimerRecord {
   userId         Int
   Date           DateTime   @db.Date
   WorkTimeRecord DateTime   @db.Time
   user           User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
-  @@id(fields: [userId, Date], name: "timerCompositeId")
+  @@id(fields: [userId, Date], name: "timerRecordCompositeId")
   @@map(name: "timer_records")
 }
