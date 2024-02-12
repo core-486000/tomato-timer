@@ -69,12 +69,14 @@ function setTimer(finishTime) {
   const now = new Date();
   remainingTime = finishTime.getTime() - now.getTime();
   formattedTime = getformattedTime(remainingTime);
-  timer.text(formattedTime);
-  $('title').html(`${formattedTime} トマトタイマー`);
 
   if (remainingTime <= 0) {
+    formattedTime = '00:00';
     timerEnd();
   }
+
+  timer.text(formattedTime);
+  $('title').html(`${formattedTime} トマトタイマー`);
 }
 
 function timerEnd() {
