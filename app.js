@@ -55,7 +55,10 @@ app.use(helmet({
     directives: {
       "script-src": ["'self'",
       "https://code.jquery.com/jquery-3.7.1.min.js", 
-      "https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"]
+      "https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js",
+      "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"],
+      "style-src": ["'self'",
+      "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"]
     }
   }
 }));

@@ -7,6 +7,7 @@
     "test": "jest --testTimeout=10000 --forceExit"
   },
   "dependencies": {
+    "@popperjs/core": "2.11.7",
     "@prisma/client": "4.13.0",
     "cookie-parser": "^1.4.6",
     "dayjs": "1.11.7",
