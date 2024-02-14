@@ -2,7 +2,6 @@ extends layout
 
 block content
   h2 トマトタイマー
-  a(href="/timer/edit") 時間変更フォーム
   div
     if user
       a(href="/logout") #{user.username} をログアウト 
@@ -14,6 +13,26 @@ block content
     button#start-button(type="button") START
     button#skip-button(type="button") SKIP
     p#timer-status
+  div.dropdown 
+    button#change-time-dropdown.btn.btn-primary.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside") 時間の変更
+    form#change-time-form.dropdown-menu.p-4(action="/timer/update" method="POST") 
+      div#csrf-token-div
+        input#csrf-token-input(type="hidden" name="_csrf" value!=csrfToken)
+      div.mb-3
+        label.form-label(for="work-time") 作業時間(分)
+        input#work-time.form-control(type="number" name="work_time" min="1" max="99" value=cookies.workTime || 25 required)
+      div.mb-3
+        label.form-label(for="break-time") 休憩時間(分)
+        input#break-time.form-control(type="number" name="break_time" min="1" max="99" value=cookies.breakTime || 5 required)
+      div.mb-3
+        label.form-label(for="loop") 作業と休憩のループ回数
+        input#loop.form-control(type="number" name="loop" min="1" max="10" value=cookies.loop || 4 required)
+      div.mb-3
+        label.form-label(for="last-break-time") 最後の休憩時間(分)
+        input#last-break-time.form-control(type="number" name="last_break_time" min="1" max="99" value=cookies.lastBreakTime || 15 required)
+      button#default-button.btn.btn-secondary.me-2(type="button") デフォルト
+      button.btn.btn-primary(type="submit") 送信
   script(src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js")
   script(src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous")
+  script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js") 
   script(src="/javascripts/script.js")

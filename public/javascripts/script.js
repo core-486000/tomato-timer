@@ -15,21 +15,25 @@ const breakTime = Cookies.get('breakTime') || 5;
 const loop = Cookies.get('loop') || 4;
 const lastBreakTime = Cookies.get('lastBreakTime') || 15;
 const sortedTime = [];
-// workTime, breakTime, loop, lastBreakTimeをまとめる
-for (let i = 1; i <= loop; i++) {
-  sortedTime.push(workTime);
-  if (i < loop) {
-    sortedTime.push(breakTime);
-  } else {
-    sortedTime.push(lastBreakTime);
-  }
-}
-let iterator = sortedTime[Symbol.iterator]();
+let iterator = sortedTime[Symbol.iterator]();;
 let workAndBreakCount = 0;
 
-denySleepMode().then(init);
+(() => {
+  // workTime, breakTime, loop, lastBreakTimeをまとめる
+  for (let i = 1; i <= loop; i++) {
+    sortedTime.push(workTime);
+    if (i < loop) {
+      sortedTime.push(breakTime);
+    } else {
+      sortedTime.push(lastBreakTime);
+    }
+  }
 
-async function init() {
+  denySleepMode();
+  init();
+})();
+
+function init() {
   clearInterval(timerId);
   clearTimeout(timerSoundExpire);
   allowSleepMode();
@@ -170,3 +174,18 @@ function allowSleepMode() {
       });
   }
 }
+
+// #change-time-dropdownが開かれた時
+$('#change-time-dropdown').on('show.bs.dropdown' , () => {
+  // csrfTokenの有効期限が切れないように更新
+  $('#csrf-token-div').load('/timer #csrf-token-input');
+});
+
+$('#default-button').click(() => {
+  if (window.confirm('デフォルト値に戻しますか？')) {  
+    $('#work-time').val(25);
+    $('#break-time').val(5);  
+    $('#loop').val(4);  
+    $('#last-break-time').val(15);  
+  }
+});

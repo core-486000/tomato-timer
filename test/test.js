@@ -51,16 +51,15 @@ describe('/logout', () => {
 describe('/timer/update', () => {
   test('タイマー時間のCookieが更新できる', async () => {
     const { formToken, cookieToken } = await getCSRFTokens();
-    // 更新がされることをテスト
     await request(app)
       .post('/timer/update')
       .set('Cookie', `csrfToken=${cookieToken}`)
       .send({
         _csrf: formToken,
-        workTime: 45, 
-        breakTime: 10, 
+        work_time: 45, 
+        break_time: 10, 
         loop: 3, 
-        lastBreakTime: 20 
+        last_break_time: 20 
       })
       .expect('set-cookie', /workTime=45;/)
       .expect('set-cookie', /breakTime=10;/)
@@ -72,7 +71,7 @@ describe('/timer/update', () => {
 async function getCSRFTokens() {
   const response = await request(app).get('/timer');
   return {
-    formToken: response.text.match(/<input type="hidden" name="_csrf" value="(.+?)">/)[1],
+    formToken: response.text.match(/<input id="csrf-token-input" type="hidden" name="_csrf" value="(.+?)">/)[1],
     cookieToken: response.headers['set-cookie'][0].match(/csrfToken=(.+?);/)[1]
   };
 }
