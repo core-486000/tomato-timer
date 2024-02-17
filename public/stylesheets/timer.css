@@ -22,3 +22,10 @@
   --bs-btn-font-size: 30px;
   border: none;
 }
+
+@media (hover: none) { 
+  #timer-inner-div > button {
+    --bs-btn-hover-color: var(--bs-btn-color);
+    --bs-btn-hover-bg: var(--bs-btn-bg);
+  }
+}
