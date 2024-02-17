@@ -5,28 +5,3 @@ body {
 a {
   color: #00B7FF;
 }
-
-#timer-div {
-  position: relative;
-  background-image: url("../images/tomato.png");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100%;
-  aspect-ratio: 1 / 1;
-  max-width: 500px;
-}
-
-#timer-inner-div {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: #F8F9FA;
-  width: 100%;
-}
-
-#timer-inner-div > button {
-  --bs-btn-font-size: 30px;
-  border: none;
-}

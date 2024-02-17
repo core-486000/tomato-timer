@@ -128,7 +128,7 @@ $('body').on('click', '#start-button', async () => {
   const now = new Date();
   const finishTime = new Date();
   finishTime.setMilliseconds(now.getMilliseconds() + remainingTime);
-  timerId = setInterval(function(){setTimer(finishTime)}, 50);
+  timerId = setInterval(function(){setTimer(finishTime)}, 100);
 
   denySleepMode();
 });

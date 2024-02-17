@@ -1,5 +1,8 @@
 extends layout
 
+block stylesheets 
+  link(rel="stylesheet" href="/stylesheets/timer.css")
+  
 block content
   div.dropdown
     button#change-time-dropdown.btn.btn-secondary.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside") 設定 
@@ -31,3 +34,8 @@ block content
       button#skip-button.btn.btn-outline-light.btn-lg.me-2(type="button")
         i.bi.bi-skip-end-fill
       p#timer-status.mt-2
+
+block scripts 
+  script(src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js")
+  script(src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous")
+  script(src="/javascripts/timer.js")
