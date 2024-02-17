@@ -42,10 +42,14 @@ function init() {
   timerStatus.append(`, ${Math.ceil(workAndBreakCount / 2)}周目`);  
 
   $('#stop-button').replaceWith(
-    '<button id="start-button" type="button">START</button>'
+    `<button id="start-button" class="btn btn-outline-light btn-lg me-2" type="button">
+      <i class="bi bi-play-fill"></i>
+    </button>`
   );
   $('#ok-button').replaceWith(
-    '<button id="start-button" type="button">START</button>'
+    `<button id="start-button" class="btn btn-outline-light btn-lg me-2" type="button">
+      <i class="bi bi-play-fill"></i>
+    </button>`
   );
 
   if (playPromise !== undefined) {
@@ -86,7 +90,9 @@ function setTimer(finishTime) {
 function timerEnd() {
   clearInterval(timerId);
   $('#stop-button').replaceWith(
-    '<button id="ok-button" type="button">OK</button>'
+    `<button id="ok-button" class="btn btn-outline-light btn-lg me-2" type="button">
+      <i class="bi bi-check"></i>
+    </button>`
   );
   timerSound.loop = true;
   playPromise = timerSound.play();
@@ -111,7 +117,9 @@ $('#reset-button').click(() => {
 
 $('body').on('click', '#start-button', async () => {
   $('#start-button').replaceWith(
-    '<button id="stop-button" type="button">STOP</button>'
+    `<button id="stop-button" class="btn btn-outline-light btn-lg me-2" type="button">
+      <i class="bi bi-pause-fill"></i>
+    </button>`
   );
   timerSound.load();
   timerStatus.text(workAndBreakCount % 2 === 0 ? '現在:休憩時間' : '現在:作業時間');
@@ -120,7 +128,7 @@ $('body').on('click', '#start-button', async () => {
   const now = new Date();
   const finishTime = new Date();
   finishTime.setMilliseconds(now.getMilliseconds() + remainingTime);
-  timerId = setInterval(function(){setTimer(finishTime)}, 50);
+  timerId = setInterval(function(){setTimer(finishTime)}, 100);
 
   denySleepMode();
 });
@@ -128,7 +136,9 @@ $('body').on('click', '#start-button', async () => {
 $('body').on('click', '#stop-button', () => {
   clearInterval(timerId);
   $('#stop-button').replaceWith(
-    '<button id="start-button" type="button">START</button>'
+    `<button id="start-button" class="btn btn-outline-light btn-lg me-2" type="button">
+      <i class="bi bi-play-fill"></i>
+    </button>`
   );
   
   allowSleepMode();
