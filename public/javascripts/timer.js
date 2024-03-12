@@ -6,12 +6,11 @@ let timerId;
 let timerSoundExpire;
 let remainingTime;
 let formattedTime;
-let elapsedWorkTime = 0;
-let todaysWorkTime = dayjs('0');
+const elapsedWorkTimeMap = new Map;
+let previousTime;
 const timerSound = new Audio('../sounds/timer-sound.mp3');
 let playPromise;
 let wakeLock = null;
-
 const workTime = Cookies.get('workTime') || 25;
 const breakTime = Cookies.get('breakTime') || 5;
 const loop = Cookies.get('loop') || 4;
@@ -37,15 +36,12 @@ let workAndBreakCount = 0;
 })();
 
 function init() {
-  todaysWorkTime = todaysWorkTime.add(elapsedWorkTime, 'ms');
-  elapsedWorkTime = 0;
-
   clearInterval(timerId);
   clearTimeout(timerSoundExpire);
   allowSleepMode();
   workAndBreakCount++;
   timerStatus.text(workAndBreakCount % 2 === 0 ? '次:休憩時間' : '次:作業時間');
-  timerStatus.append(`, ${Math.ceil(workAndBreakCount / 2)}周目`);  
+  timerStatus.append(`, ${Math.ceil(workAndBreakCount / 2)}周目`);
 
   $('#stop-button').replaceWith(
     `<button id="start-button" class="btn btn-outline-light btn-lg me-2" type="button">
@@ -73,19 +69,28 @@ function init() {
   }
 
   remainingTime = settingTime * 1000 * 60;
-  formattedTime = dayjs(remainingTime + 999).format('mm:ss'); // ミリ秒以下を切り上げてフォーマット
+  // ミリ秒以下を切り上げてフォーマット
+  formattedTime = dayjs(remainingTime + 999).format('mm:ss');
   timer.text(formattedTime);
   $('title').html('トマトタイマー');
 }
 
 // タイマーのカウントダウン
 function setTimer(finishTime) {
-  const now = new Date();
+  const now = dayjs();
   remainingTime = finishTime.diff(now);
-  formattedTime = dayjs(remainingTime + 999).format('mm:ss'); // ミリ秒以下を切り上げてフォーマット
-  
+  // ミリ秒以下を切り上げてフォーマット
+  formattedTime = dayjs(remainingTime + 999).format('mm:ss');
+
+  // 経過したworkTimeをCookieに保存
   if (workAndBreakCount % 2 === 1) {
-    elapsedWorkTime = settingTime * 60 * 1000 - remainingTime;
+    const timeDifference = now.diff(previousTime);
+    previousTime = dayjs();
+    let elapsedWorkTimeMapKey = dayjs().format('YYYY/MM/DD');
+    const elapsedWorkTimeMapValue = elapsedWorkTimeMap.get(elapsedWorkTimeMapKey) || 0;
+    elapsedWorkTimeMap.set(elapsedWorkTimeMapKey, elapsedWorkTimeMapValue + timeDifference);
+    const elapsedWorkTimeJson = JSON.stringify(Object.fromEntries(elapsedWorkTimeMap));
+    Cookies.set('elapsedWorkTimeJson', elapsedWorkTimeJson);
   }
 
   if (remainingTime <= 0) {
@@ -114,7 +119,6 @@ function finishTimer() {
         timerSound.load();
       });
     }
-
     allowSleepMode();
   }, 1000 * 60 * 10);
 }
@@ -135,9 +139,9 @@ $('body').on('click', '#start-button', async () => {
   timerStatus.text(workAndBreakCount % 2 === 0 ? '現在:休憩時間' : '現在:作業時間');
   timerStatus.append(`, ${Math.ceil(workAndBreakCount / 2)}周目`);
 
+  previousTime = dayjs();
   const finishTime = dayjs().add(remainingTime, 'ms');
-  timerId = setInterval(setTimer, 50, finishTime);
-
+  timerId = setInterval(setTimer, 1000, finishTime);
   denySleepMode();
 });
 
@@ -145,16 +149,30 @@ $('body').on('click', '#stop-button', () => {
   clearInterval(timerId);
   $('#stop-button').replaceWith(
     `<button id="start-button" class="btn btn-outline-light btn-lg me-2" type="button">
-      <i class="bi bi-play-fill"></i>
+    <i class="bi bi-play-fill"></i>
     </button>`
   );
-  
   allowSleepMode();
 });
 
 $('body').on('click', '#ok-button', init);
 
 $('#skip-button').click(init);
+
+// #change-time-dropdownが開かれた時
+$('#change-time-dropdown').on('show.bs.dropdown', () => {
+  // csrfTokenの有効期限が切れないように更新
+  $('#csrf-token-div').load('/timer #csrf-token-input');
+});
+
+$('#default-button').click(() => {
+  if (window.confirm('デフォルト値に戻しますか？')) {
+    $('#work-time').val(25);
+    $('#break-time').val(5);
+    $('#loop').val(4);
+    $('#last-break-time').val(15);
+  }
+});
 
 async function denySleepMode() {
   // wakeLockに対応している場合のみ、自動スリープを禁止
@@ -169,23 +187,8 @@ async function denySleepMode() {
 
 function allowSleepMode() {
   if (wakeLock !== null) {
-      wakeLock.release().then(() => {
-        wakeLock = null;
-      });
+    wakeLock.release().then(() => {
+      wakeLock = null;
+    });
   }
 }
-
-// #change-time-dropdownが開かれた時
-$('#change-time-dropdown').on('show.bs.dropdown' , () => {
-  // csrfTokenの有効期限が切れないように更新
-  $('#csrf-token-div').load('/timer #csrf-token-input');
-});
-
-$('#default-button').click(() => {
-  if (window.confirm('デフォルト値に戻しますか？')) {  
-    $('#work-time').val(25);
-    $('#break-time').val(5);  
-    $('#loop').val(4);  
-    $('#last-break-time').val(15);  
-  }
-});
