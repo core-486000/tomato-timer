@@ -11,20 +11,18 @@ datasource db {
 }
 
 model User {
-  userId   Int     @id
-  username String  @unique @db.VarChar(255)
-  timerRecord    TimerRecord[]
+  userId      Int           @id
+  username    String        @unique @db.VarChar(255)
+  timerRecord TimerRecord[]
 
   @@map(name: "users")
 }
 
-// 1日の作業時間を記録する
+// 経過した作業時間を記録する
 model TimerRecord {
-  userId         Int
-  Date           DateTime   @db.Date
-  WorkTimeRecord DateTime   @db.Time
-  user           User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userId              Int  @id
+  elapsedWorkTimeJson Json
+  user                User @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
-  @@id(fields: [userId, Date], name: "timerRecordCompositeId")
   @@map(name: "timer_records")
 }

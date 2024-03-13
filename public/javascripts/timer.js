@@ -6,7 +6,6 @@ let timerId;
 let timerSoundExpire;
 let remainingTime;
 let formattedTime;
-const elapsedWorkTimeMap = new Map;
 let previousTime;
 const timerSound = new Audio('../sounds/timer-sound.mp3');
 let playPromise;
@@ -84,13 +83,15 @@ function setTimer(finishTime) {
 
   // 経過したworkTimeをCookieに保存
   if (workAndBreakCount % 2 === 1) {
+    const elapsedWorkTimeMap = Cookies.get('elapsedWorkTimeJson') ?
+      new Map(Object.entries(JSON.parse(Cookies.get('elapsedWorkTimeJson')))) : new Map;
     const timeDifference = now.diff(previousTime);
     previousTime = dayjs();
     let elapsedWorkTimeMapKey = dayjs().format('YYYY/MM/DD');
     const elapsedWorkTimeMapValue = elapsedWorkTimeMap.get(elapsedWorkTimeMapKey) || 0;
     elapsedWorkTimeMap.set(elapsedWorkTimeMapKey, elapsedWorkTimeMapValue + timeDifference);
     const elapsedWorkTimeJson = JSON.stringify(Object.fromEntries(elapsedWorkTimeMap));
-    Cookies.set('elapsedWorkTimeJson', elapsedWorkTimeJson);
+    Cookies.set('elapsedWorkTimeJson', elapsedWorkTimeJson, { expires: 365 });
   }
 
   if (remainingTime <= 0) {
