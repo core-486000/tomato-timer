@@ -1,7 +1,9 @@
 'use strict';
 const express = require('express');
 const router = express.Router();
-
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient({ log: [ 'query' ] });
+const authenticationEnsurer = require('./authentication-ensurer');
 const { body, validationResult } = require('express-validator');
 
 router.get('/', (req, res, next) => {
@@ -25,7 +27,7 @@ router.get('/', (req, res, next) => {
   });
 });
 
-// Cookieにタイマー時間を保存
+// タイマー時間をCookieに保存
 router.post('/update', async (req, res, next) => {
   await body('work_time').isInt({ min: 1, max: 99 }).run(req);
   await body('break_time').isInt({ min: 1, max: 99 }).run(req);
@@ -45,6 +47,31 @@ router.post('/update', async (req, res, next) => {
     .cookie('loop', req.body.loop, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
     .cookie('lastBreakTime', req.body.last_break_time, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
     .redirect('/timer');
+});
+
+// タイマーの記録を表示するページ
+router.get('/record', authenticationEnsurer, async (req, res, next) => {
+  const userId = parseInt(req.user.id);
+  const timeWorkedJson = req.cookies.timeWorkedJson || null;
+  const data = { userId, timeWorkedJson };
+
+  if (timeWorkedJson) {
+    await prisma.timeWorked.upsert({
+      where: { userId },
+      create: data,
+      update: data
+    });
+  }
+
+  const timeWorked = await prisma.timeWorked.findUnique({
+    where: { userId }
+  });
+
+  if (timeWorked) {
+    res.cookie('timeWorkedJson', timeWorked.timeWorkedJson, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+  }
+
+  res.render('record', {user: req.user});
 });
 
 module.exports = router;

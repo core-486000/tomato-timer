@@ -11,20 +11,18 @@ datasource db {
 }
 
 model User {
-  userId   Int     @id
-  username String  @unique @db.VarChar(255)
-  timerRecord    TimerRecord[]
+  userId      Int          @id
+  username    String       @unique @db.VarChar(255)
+  timerRecord TimeWorked[]
 
   @@map(name: "users")
 }
 
-// 1日の作業時間を記録する
-model TimerRecord {
-  userId         Int
-  Date           DateTime   @db.Date
-  WorkTimeRecord DateTime   @db.Time
-  user           User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
+// 作業した時間を記録する
+model TimeWorked {
+  userId         Int  @id
+  timeWorkedJson Json
+  user           User @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
-  @@id(fields: [userId, Date], name: "timerRecordCompositeId")
-  @@map(name: "timer_records")
+  @@map(name: "time_worked")
 }

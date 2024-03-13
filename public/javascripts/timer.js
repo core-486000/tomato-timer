@@ -6,16 +6,17 @@ let timerId;
 let timerSoundExpire;
 let remainingTime;
 let formattedTime;
+let previousTime;
 const timerSound = new Audio('../sounds/timer-sound.mp3');
 let playPromise;
 let wakeLock = null;
-
 const workTime = Cookies.get('workTime') || 25;
 const breakTime = Cookies.get('breakTime') || 5;
 const loop = Cookies.get('loop') || 4;
 const lastBreakTime = Cookies.get('lastBreakTime') || 15;
 const sortedTime = [];
-let iterator = sortedTime[Symbol.iterator]();;
+let iterator = sortedTime[Symbol.iterator]();
+let settingTime;
 let workAndBreakCount = 0;
 
 (() => {
@@ -39,7 +40,7 @@ function init() {
   allowSleepMode();
   workAndBreakCount++;
   timerStatus.text(workAndBreakCount % 2 === 0 ? '次:休憩時間' : '次:作業時間');
-  timerStatus.append(`, ${Math.ceil(workAndBreakCount / 2)}周目`);  
+  timerStatus.append(`, ${Math.ceil(workAndBreakCount / 2)}周目`);
 
   $('#stop-button').replaceWith(
     `<button id="start-button" class="btn btn-outline-light btn-lg me-2" type="button">
@@ -60,34 +61,49 @@ function init() {
   }
 
   // lastBreakTimeが終了したら最初に戻る
-  let nextIterator = iterator.next().value;
-  if (nextIterator === undefined) {
+  settingTime = iterator.next().value;
+  if (settingTime === undefined) {
     iterator = sortedTime[Symbol.iterator]();
-    nextIterator = iterator.next().value;
+    settingTime = iterator.next().value;
   }
 
-  remainingTime = nextIterator * 1000 * 60;
-  formattedTime = getformattedTime(remainingTime);
+  remainingTime = settingTime * 1000 * 60;
+  // ミリ秒以下を切り上げてフォーマット
+  formattedTime = dayjs(remainingTime + 999).format('mm:ss');
   timer.text(formattedTime);
   $('title').html('トマトタイマー');
 }
 
 // タイマーのカウントダウン
 function setTimer(finishTime) {
-  const now = new Date();
-  remainingTime = finishTime.getTime() - now.getTime();
-  formattedTime = getformattedTime(remainingTime);
+  const now = dayjs();
+  remainingTime = finishTime.diff(now);
+  // ミリ秒以下を切り上げてフォーマット
+  formattedTime = dayjs(remainingTime + 999).format('mm:ss');
+
+  // 作業した時間をCookieに保存
+  if (workAndBreakCount % 2 === 1) {
+    const timeWorkedMap = Cookies.get('timeWorkedJson') ?
+      new Map(Object.entries(JSON.parse(Cookies.get('timeWorkedJson')))) : new Map;
+    const timeDifference = now.diff(previousTime);
+    previousTime = dayjs();
+    let timeWorkedMapKey = dayjs().format('YYYY/MM/DD');
+    const timeWorkedMapValue = timeWorkedMap.get(timeWorkedMapKey) || 0;
+    timeWorkedMap.set(timeWorkedMapKey, timeWorkedMapValue + timeDifference);
+    const timeWorkedJson = JSON.stringify(Object.fromEntries(timeWorkedMap));
+    Cookies.set('timeWorkedJson', timeWorkedJson, { expires: 365 });
+  }
 
   if (remainingTime <= 0) {
     formattedTime = '00:00';
-    timerEnd();
+    finishTimer();
   }
 
   timer.text(formattedTime);
   $('title').html(`${formattedTime} トマトタイマー`);
 }
 
-function timerEnd() {
+function finishTimer() {
   clearInterval(timerId);
   $('#stop-button').replaceWith(
     `<button id="ok-button" class="btn btn-outline-light btn-lg me-2" type="button">
@@ -104,7 +120,6 @@ function timerEnd() {
         timerSound.load();
       });
     }
-
     allowSleepMode();
   }, 1000 * 60 * 10);
 }
@@ -125,11 +140,9 @@ $('body').on('click', '#start-button', async () => {
   timerStatus.text(workAndBreakCount % 2 === 0 ? '現在:休憩時間' : '現在:作業時間');
   timerStatus.append(`, ${Math.ceil(workAndBreakCount / 2)}周目`);
 
-  const now = new Date();
-  const finishTime = new Date();
-  finishTime.setMilliseconds(now.getMilliseconds() + remainingTime);
-  timerId = setInterval(function(){setTimer(finishTime)}, 100);
-
+  previousTime = dayjs();
+  const finishTime = dayjs().add(remainingTime, 'ms');
+  timerId = setInterval(setTimer, 1000, finishTime);
   denySleepMode();
 });
 
@@ -137,10 +150,9 @@ $('body').on('click', '#stop-button', () => {
   clearInterval(timerId);
   $('#stop-button').replaceWith(
     `<button id="start-button" class="btn btn-outline-light btn-lg me-2" type="button">
-      <i class="bi bi-play-fill"></i>
+    <i class="bi bi-play-fill"></i>
     </button>`
   );
-  
   allowSleepMode();
 });
 
@@ -148,23 +160,20 @@ $('body').on('click', '#ok-button', init);
 
 $('#skip-button').click(init);
 
-function getformattedTime(remainingTime) {
-  // ミリ秒以下を切り上げ
-  let ceilRemainingTime = Math.ceil(remainingTime / 10) * 10;
-  ceilRemainingTime = Math.ceil(ceilRemainingTime / 100) * 100;
-  ceilRemainingTime = Math.ceil(ceilRemainingTime / 1000) * 1000;
+// #change-time-dropdownが開かれた時
+$('#change-time-dropdown').on('show.bs.dropdown', () => {
+  // csrfTokenの有効期限が切れないように更新
+  $('#csrf-token-div').load('/timer #csrf-token-input');
+});
 
-  let minutes = new Date(ceilRemainingTime).getMinutes();
-  // 60分以上の時、正しく表示する
-  if (ceilRemainingTime >= 1000 * 60 * 60) {
-    minutes += 60;
+$('#default-button').click(() => {
+  if (window.confirm('デフォルト値に戻しますか？')) {
+    $('#work-time').val(25);
+    $('#break-time').val(5);
+    $('#loop').val(4);
+    $('#last-break-time').val(15);
   }
-  minutes = ('0' + minutes).slice(-2);
-
-  let seconds = new Date(ceilRemainingTime).getSeconds();
-  seconds = ('0' + seconds).slice(-2);
-  return `${minutes}:${seconds}`;
-}
+});
 
 async function denySleepMode() {
   // wakeLockに対応している場合のみ、自動スリープを禁止
@@ -179,23 +188,8 @@ async function denySleepMode() {
 
 function allowSleepMode() {
   if (wakeLock !== null) {
-      wakeLock.release().then(() => {
-        wakeLock = null;
-      });
+    wakeLock.release().then(() => {
+      wakeLock = null;
+    });
   }
 }
-
-// #change-time-dropdownが開かれた時
-$('#change-time-dropdown').on('show.bs.dropdown' , () => {
-  // csrfTokenの有効期限が切れないように更新
-  $('#csrf-token-div').load('/timer #csrf-token-input');
-});
-
-$('#default-button').click(() => {
-  if (window.confirm('デフォルト値に戻しますか？')) {  
-    $('#work-time').val(25);
-    $('#break-time').val(5);  
-    $('#loop').val(4);  
-    $('#last-break-time').val(15);  
-  }
-});
