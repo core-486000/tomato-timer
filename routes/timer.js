@@ -49,8 +49,8 @@ router.post('/update', async (req, res, next) => {
     .redirect('/timer');
 });
 
-// 作業した時間を表示するページ
-router.get('/time-worked', authenticationEnsurer, async (req, res, next) => {
+// タイマーの記録を表示するページ
+router.get('/record', authenticationEnsurer, async (req, res, next) => {
   const userId = parseInt(req.user.id);
   const timeWorkedJson = req.cookies.timeWorkedJson || null;
   const data = { userId, timeWorkedJson };
@@ -71,7 +71,7 @@ router.get('/time-worked', authenticationEnsurer, async (req, res, next) => {
     res.cookie('timeWorkedJson', timeWorked.timeWorkedJson, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
   }
 
-  res.render('time-worked');
+  res.render('record', {user: req.user});
 });
 
 module.exports = router;
