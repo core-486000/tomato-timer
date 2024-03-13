@@ -81,17 +81,17 @@ function setTimer(finishTime) {
   // ミリ秒以下を切り上げてフォーマット
   formattedTime = dayjs(remainingTime + 999).format('mm:ss');
 
-  // 経過したworkTimeをCookieに保存
+  // 作業した時間をCookieに保存
   if (workAndBreakCount % 2 === 1) {
-    const elapsedWorkTimeMap = Cookies.get('elapsedWorkTimeJson') ?
-      new Map(Object.entries(JSON.parse(Cookies.get('elapsedWorkTimeJson')))) : new Map;
+    const timeWorkedMap = Cookies.get('timeWorkedJson') ?
+      new Map(Object.entries(JSON.parse(Cookies.get('timeWorkedJson')))) : new Map;
     const timeDifference = now.diff(previousTime);
     previousTime = dayjs();
-    let elapsedWorkTimeMapKey = dayjs().format('YYYY/MM/DD');
-    const elapsedWorkTimeMapValue = elapsedWorkTimeMap.get(elapsedWorkTimeMapKey) || 0;
-    elapsedWorkTimeMap.set(elapsedWorkTimeMapKey, elapsedWorkTimeMapValue + timeDifference);
-    const elapsedWorkTimeJson = JSON.stringify(Object.fromEntries(elapsedWorkTimeMap));
-    Cookies.set('elapsedWorkTimeJson', elapsedWorkTimeJson, { expires: 365 });
+    let timeWorkedMapKey = dayjs().format('YYYY/MM/DD');
+    const timeWorkedMapValue = timeWorkedMap.get(timeWorkedMapKey) || 0;
+    timeWorkedMap.set(timeWorkedMapKey, timeWorkedMapValue + timeDifference);
+    const timeWorkedJson = JSON.stringify(Object.fromEntries(timeWorkedMap));
+    Cookies.set('timeWorkedJson', timeWorkedJson, { expires: 365 });
   }
 
   if (remainingTime <= 0) {

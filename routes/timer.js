@@ -49,16 +49,29 @@ router.post('/update', async (req, res, next) => {
     .redirect('/timer');
 });
 
-router.get('/elapsed-work-times', authenticationEnsurer, async (req, res, next) => {
+// 作業した時間を表示するページ
+router.get('/time-worked', authenticationEnsurer, async (req, res, next) => {
   const userId = parseInt(req.user.id);
-  const elapsedWorkTimeJson = req.cookies.elapsedWorkTimeJson;
-  const data = { userId, elapsedWorkTimeJson };
-  await prisma.TimerRecord.upsert({
-    where: { userId },
-    create: data,
-    update: data
+  const timeWorkedJson = req.cookies.timeWorkedJson || null;
+  const data = { userId, timeWorkedJson };
+
+  if (timeWorkedJson) {
+    await prisma.timeWorked.upsert({
+      where: { userId },
+      create: data,
+      update: data
+    });
+  }
+
+  const timeWorked = await prisma.timeWorked.findUnique({
+    where: { userId }
   });
-  res.send();
+
+  if (timeWorked) {
+    res.cookie('timeWorkedJson', timeWorked.timeWorkedJson, { maxAge: 1000 * 60 * 60 * 24 * 365, secure: true })
+  }
+
+  res.render('time-worked');
 });
 
 module.exports = router;
