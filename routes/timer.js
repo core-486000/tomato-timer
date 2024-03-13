@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient({ log: [ 'query' ] });
-
+const authenticationEnsurer = require('./authentication-ensurer');
 const { body, validationResult } = require('express-validator');
 
 router.get('/', (req, res, next) => {
@@ -49,7 +49,7 @@ router.post('/update', async (req, res, next) => {
     .redirect('/timer');
 });
 
-router.get('/elapsed-work-times', async (req, res, next) => {
+router.get('/elapsed-work-times', authenticationEnsurer, async (req, res, next) => {
   const userId = parseInt(req.user.id);
   const elapsedWorkTimeJson = req.cookies.elapsedWorkTimeJson;
   const data = { userId, elapsedWorkTimeJson };
