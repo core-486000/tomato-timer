@@ -1,6 +1,6 @@
 'use strict';
 dayjs.extend(dayjs_plugin_utc);
-const canvas = $('#chartCanvas');
+const canvas = $('#myChart');
 const timeWorkedMap = new Map(Object.entries(JSON.parse(Cookies.get('timeWorkedJson'))));
 
 // ミリ秒を分に変換
@@ -12,7 +12,7 @@ const data = {
   labels: Array.from(timeWorkedMap.keys()),
   datasets: [
     {
-      label: '作業した時間(分)',
+      label: '作業した時間',
       hoverBackgroundColor: "rgba(255,99,132,0.3)",
       data: Array.from(timeWorkedMap.values())
     }
@@ -23,7 +23,7 @@ const options = {
   plugins: {
     title: {
       display: true,
-      text: 'タイマーの記録'
+      text: '記録'
     }
   },  
   scales: {
@@ -34,7 +34,8 @@ const options = {
         }
       }
     }
-  }
+  },
+  maintainAspectRatio: false
 };
 
 const chart = new Chart(canvas, {
